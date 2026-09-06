@@ -1,0 +1,6 @@
+{
+  "name": "EcoSight - 경제의 눈",
+  "description": "경제 흐름(Flow)을 읽는 통찰력 배양, 프리즘 분석, 100년 역사적 거울, 레드팀 소크라테스 토론 및 지식 아카이브 학습 파트너",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
