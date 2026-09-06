@@ -14,7 +14,8 @@ import {
   Layers,
   Sliders,
   DollarSign,
-  HelpCircle
+  HelpCircle,
+  Check
 } from 'lucide-react';
 import { AIEngineConfig, AIEngineTestResult, LLMProvider } from '../types';
 import { POPULAR_OLLAMA_MODELS, saveEngineConfig } from '../utils/engineConfig';
@@ -48,6 +49,18 @@ export const AIEngineModal: React.FC<Props> = ({
   const isCloudPreview = typeof window !== 'undefined' && 
     window.location.hostname !== 'localhost' && 
     window.location.hostname !== '127.0.0.1';
+
+  // Close on Escape key
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -107,13 +120,16 @@ export const AIEngineModal: React.FC<Props> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+      onClick={onClose}
+    >
       <div 
-        className="relative w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-3xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/70">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/90 backdrop-blur-md z-20">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-sm">
               <Cpu className="w-5 h-5" />
@@ -132,9 +148,14 @@ export const AIEngineModal: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition cursor-pointer shadow-sm group shrink-0"
+            title="창 닫기 (ESC)"
+            aria-label="닫기"
           >
-            <X className="w-5 h-5" />
+            <span className="text-xs font-semibold group-hover:text-amber-300">닫기</span>
+            <div className="w-5 h-5 rounded-md bg-slate-700/60 group-hover:bg-amber-500/20 flex items-center justify-center text-slate-300 group-hover:text-amber-300 transition">
+              <X className="w-3.5 h-3.5" />
+            </div>
           </button>
         </div>
 
@@ -147,9 +168,9 @@ export const AIEngineModal: React.FC<Props> = ({
                 <Layers className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-semibold text-slate-200 block">EcoSight 3단계 엔진 로드맵</span>
+                <span className="font-semibold text-slate-200 block">EcoSight 3단계 사고력 & 엔진 로드맵</span>
                 <span className="text-[11px] text-slate-400">
-                  <strong className="text-emerald-400">Tier 1 (로컬 0원)</strong> · <strong className="text-amber-400">Tier 2 (Cloud Free)</strong> · <strong className="text-purple-400">Tier 3 (차후 Pro 결제 확장)</strong>
+                  <strong className="text-emerald-400">Tier 1 Explorer (₩0)</strong> · <strong className="text-amber-400">Tier 2 Strategist (₩9,900/월)</strong> · <strong className="text-purple-400">Tier 3 Decision Maker (₩29,000/월)</strong>
                 </span>
               </div>
             </div>
@@ -367,23 +388,50 @@ export const AIEngineModal: React.FC<Props> = ({
                   className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none mb-2"
                 />
 
-                {/* Quick Model Pills */}
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULAR_OLLAMA_MODELS.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => setOllamaModel(m.id)}
-                      className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition cursor-pointer border ${
-                        ollamaModel === m.id
-                          ? 'bg-emerald-600 text-white border-emerald-500'
-                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-                      }`}
-                      title={m.desc}
-                    >
-                      {m.name}
-                    </button>
-                  ))}
+                {/* Model Recommendation Cards with Explanations */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-slate-300 block">
+                    추천 오픈소스 모델 및 특징:
+                  </span>
+                  <div className="grid grid-cols-1 gap-2">
+                    {POPULAR_OLLAMA_MODELS.map((m) => {
+                      const isSelected = ollamaModel === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setOllamaModel(m.id)}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-1 ${
+                            isSelected
+                              ? 'bg-emerald-950/40 border-emerald-500/80 ring-1 ring-emerald-500/40 shadow-sm'
+                              : 'bg-slate-900/80 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-white font-mono">{m.name}</span>
+                              <code className="text-[10px] px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 font-mono border border-slate-800">
+                                {m.id}
+                              </code>
+                            </div>
+                            {isSelected ? (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30 flex items-center gap-1">
+                                <Check className="w-3 h-3" />
+                                선택됨
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 group-hover:text-slate-400">
+                                클릭하여 적용
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-300 leading-snug">
+                            {m.desc}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -576,15 +624,14 @@ export const AIEngineModal: React.FC<Props> = ({
             </div>
           )}
 
-          {/* Tier 3 Expansion Future Notice */}
+          {/* Tier 3 Decision Maker Future Notice */}
           <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-900/40 text-xs text-purple-300/90 flex items-start gap-2.5">
             <DollarSign className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
             <div>
-              <strong className="text-purple-200 block mb-0.5">차후 서비스 확장: Tier 3 (Pro 구독제) 준비 안내</strong>
+              <strong className="text-purple-200 block mb-0.5">차후 멤버십 확장: Tier 3 Decision Maker (월 29,000원 / 연 23,000원) 준비 안내</strong>
               <p className="text-[11px] leading-relaxed text-purple-300/80">
-                향후 타인에게 서비스를 제공하거나 모바일 앱으로 확장할 때, Stripe 결제를 연동하여 
-                <strong>월 구독료 안에서 고성능 클라우드(Gemini Pro / GPT-4o)와 FRED/ECOS 실시간 API를 제공</strong>하고 
-                서버 운영비를 보전하는 비즈니스 모델로 손쉽게 전환할 수 있도록 모듈화되어 있습니다.
+                헤지펀드 CIO급 심층 비판, Multi-Agent 대결 시뮬레이션(Bull vs Bear 자동 격돌), 정반합 종합 진단서 및 채점 PDF 출력 모듈을 제공하며, 
+                상용화 전환 시 모듈러 결제 인터페이스를 통해 안전하게 활성화할 수 있도록 사전 설계되어 있습니다.
               </p>
             </div>
           </div>
@@ -615,9 +662,11 @@ export const AIEngineModal: React.FC<Props> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-medium transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs font-medium transition cursor-pointer flex items-center gap-1 border border-slate-800"
+              title="창 닫기 (ESC)"
             >
-              취소
+              <X className="w-3.5 h-3.5" />
+              <span>닫기 (ESC)</span>
             </button>
             <button
               type="button"

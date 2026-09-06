@@ -146,10 +146,19 @@ export interface RedTeamSession {
   messages: RedTeamMessage[];
   critiqueSummary?: {
     thesisScore: number; // 0 - 100
-    blindSpots: string[];
-    strengths: string[];
-    finalSynthesis: string;
+    scoreAnalysis?: string; // 반론 대응 능력 및 데이터 기반 논리성 채점평
+    blindSpots: string[]; // 1. 생각의 균열과 맹점 발견 (Blind Spots)
+    strengths: string[]; // 돋보인 통찰 및 논리적 강점
+    evolvedThesis?: string; // 2. 정반합(Thesis-Antithesis-Synthesis)을 통한 논리 재건 가설
+    finalSynthesis: string; // 3. 최종 종합 지혜 (Synthesis) 레포트
   };
+}
+
+export interface WatermarkConfig {
+  enabled: boolean;
+  phrase: string;
+  style: 'diagonal' | 'center' | 'bottom';
+  opacity: number; // e.g. 0.06
 }
 
 export interface KnowledgeItem {

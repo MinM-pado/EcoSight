@@ -527,21 +527,56 @@ export default function App() {
   };
 
   const handleSaveRedTeamToKnowledge = (session: RedTeamSession) => {
+    const isSynthesized = !!session.critiqueSummary;
+    const title = isSynthesized
+      ? `[정반합 진단서] ${session.topic || '거시 가설 검증'}`
+      : `[레드팀 토론] ${session.topic || '경제 가설 검증'}`;
+
+    let content = `[🎯 원초 가설 (User Thesis)]:\n${session.userThesis || '가설 없음'}\n\n`;
+
+    if (session.critiqueSummary) {
+      content += `[📊 논리 강건성 점수]: ${session.critiqueSummary.thesisScore}점 / 100점\n`;
+      if (session.critiqueSummary.scoreAnalysis) {
+        content += `- 채점 소견: ${session.critiqueSummary.scoreAnalysis}\n`;
+      }
+      content += `\n[1단계: 생각의 균열과 맹점 (Blind Spot Discovery - Aha Moment)]:\n`;
+      content += session.critiqueSummary.blindSpots.map((b) => `• ${b}`).join('\n') + '\n\n';
+
+      if (session.critiqueSummary.strengths && session.critiqueSummary.strengths.length > 0) {
+        content += `[유효했던 논리 강점]:\n`;
+        content += session.critiqueSummary.strengths.map((s) => `• ${s}`).join('\n') + '\n\n';
+      }
+
+      if (session.critiqueSummary.evolvedThesis) {
+        content += `[2단계: 정반합(Thesis-Antithesis-Synthesis) 재건 가설]:\n`;
+        content += `"${session.critiqueSummary.evolvedThesis}"\n\n`;
+      }
+
+      content += `[3단계: 최종 종합 지혜 레포트 (Synthesis Report)]:\n`;
+      content += `${session.critiqueSummary.finalSynthesis}\n\n`;
+      content += `--------------------------------------------------\n`;
+    }
+
+    content += `[⚔️ 토론 대화 기록]:\n` +
+      session.messages.map((m) => `(${m.role === 'user' ? '나의 논리' : 'AI 레드팀 반론'}): ${m.content}`).join('\n\n');
+
     const newItem: KnowledgeItem = {
       id: 'session_k_' + Date.now(),
-      title: `[레드팀 토론] ${session.topic || '경제 가설 검증'}`,
+      title,
       type: 'conversation',
-      content: `[사용자 가설]: ${session.userThesis}\n\n` +
-        session.messages.map((m) => `(${m.role === 'user' ? '나' : '레드팀'}): ${m.content}`).join('\n\n') +
-        (session.critiqueSummary ? `\n\n[종합 평가 점수]: ${session.critiqueSummary.thesisScore}점\n[통찰]: ${session.critiqueSummary.finalSynthesis}` : ''),
-      tags: ['레드팀토론', '논리검증', '확증편향탈피'],
+      content,
+      tags: isSynthesized 
+        ? ['정반합진단서', '레드팀토론', '사각지대발견', '사고력훈련', '확증편향극복']
+        : ['레드팀토론', '논리검증', '확증편향탈피'],
       macroCategory: '종합/사고훈련',
       sentiment: 'Neutral/Complex',
       createdAt: new Date().toISOString(),
     };
 
     setKnowledgeItems((prev) => [newItem, ...prev]);
-    alert('레드팀 토론 기록이 지식 서고에 보관되었습니다.');
+    alert(isSynthesized 
+      ? '정반합 종합 진단 리포트가 지식 서고(Knowledge Hub)에 영구 보관되었습니다. 지식 서고 탭에서 언제든 복기하실 수 있습니다.'
+      : '레드팀 토론 기록이 지식 서고에 보관되었습니다.');
   };
 
   // Knowledge Hub operations
@@ -567,6 +602,31 @@ export default function App() {
   const handleLoadIntoPrism = (item: KnowledgeItem) => {
     setActiveTab('prism');
     handleRunAnalysis(item.title, item.content);
+  };
+
+  // F05 -> Red Team Feedback Loop: Re-debate past thesis in Red Team Chat
+  const handleTransferToRedTeam = (item: KnowledgeItem) => {
+    const topic = item.title;
+    // Extract thesis: check if thesisReview has originalThesis, or extract first few lines / evolvedThesis
+    let initialThesis = item.thesisReview?.originalThesis || '';
+    if (!initialThesis) {
+      // Check if item contains evolved thesis or content
+      const match = item.content.match(/\[2단계\] 정반합.*?가설:\s*"?([^"\n]+)"?/s);
+      if (match && match[1]) {
+        initialThesis = match[1].trim();
+      } else {
+        initialThesis = item.content.slice(0, 300).trim();
+      }
+    }
+
+    setRedTeamSession({
+      id: 'session_' + Date.now(),
+      topic,
+      userThesis: initialThesis,
+      messages: [],
+      socraticLevel,
+    });
+    setActiveTab('redteam');
   };
 
   const handleCurateRelated = async (item: KnowledgeItem) => {
@@ -703,6 +763,7 @@ export default function App() {
             onEvaluateThesis={handleEvaluateThesis}
             onResetSession={handleResetRedTeam}
             onSaveSessionToKnowledge={handleSaveRedTeamToKnowledge}
+            onNavigateToKnowledge={() => setActiveTab('knowledge')}
             isEvaluating={isEvaluatingThesis}
             isSending={isSendingRedTeam}
             currentAnalysis={currentAnalysis}
@@ -722,6 +783,7 @@ export default function App() {
             onUpdateItem={handleUpdateKnowledgeItem}
             onLoadIntoPrism={handleLoadIntoPrism}
             onCurateRelated={handleCurateRelated}
+            onTransferToRedTeam={handleTransferToRedTeam}
           />
         )}
 

@@ -505,19 +505,23 @@ function buildEmergencyRedTeamFallback(thesis: string, messages: any[], level: s
 만약 다음 분기 발표될 핵심 거시 지표가 당신의 예상과 정반대로 나온다면, 귀하의 투자 논리는 어떤 근거로 방어될 수 있습니까?`;
 }
 
-// Emergency Fallback for Evaluation
+// Emergency Fallback for Evaluation (EcoSight 3-Step Socratic Synthesis Framework)
 function buildEmergencyEvaluationFallback(thesis: string) {
   return {
-    thesisScore: 78,
+    thesisScore: 82,
+    scoreAnalysis: "사용자는 거시경제 1차 파급 경로를 명확히 짚어냈으나, 통화정책 시차와 환율 변동성이라는 테일 리스크에 대한 방어 근거가 다소 미흡했습니다. 그러나 반론을 배척하지 않고 비판적 사고를 수용하여 논리를 한 차원 끌어올린 점이 돋보입니다.",
     blindSpots: [
-      "거시 유동성 완화가 개별 기업의 잉여현금흐름으로 온전히 전달되지 않는 전이 시차 간과",
-      "중앙은행의 정책 기조 전환 시 환율 변동으로 인한 외환 평가손실 위험 미반영"
+      "거시 유동성 완화가 개별 기업의 잉여현금흐름으로 온전히 전달되기까지의 전이 시차(Transmission Lag) 간과",
+      "중앙은행의 정책 기조 전환 국면에서 신흥국 환율 변동성 및 자본 역류 리스크 미반영",
+      "시장 선반영(Priced-in) 효과로 인한 금리 인하 발표 직후 '뉴스에 파는' 단기 역마진 시나리오 부재"
     ],
     strengths: [
-      "자금의 1차 이동 경로에 대한 명확한 인과관계 설정",
-      "주류 시장의 내러티브에 휩쓸리지 않고 독자적인 가설을 정립하려는 태도"
+      "자본의 1차 이동 경로에 대한 명확한 인과관계와 거시 지표에 기반한 기본 틀 제시",
+      "주류 시장의 내러티브에 무비판적으로 휩쓸리지 않고 독자적인 가설(Thesis)을 수립하려는 일관성",
+      "레드팀의 반론 공격에 방어적 태세에 갇히지 않고 논리적 보완점을 적극 탐색한 태도"
     ],
-    finalSynthesis: "단순히 'A가 발생하면 B가 오른다'는 단선적 사고를 넘어, 정책의 반작용과 시장의 선반영 정도를 상수로 두는 2차적 사고(Second-level Thinking)로 발전시켜야 합니다."
+    evolvedThesis: "금리 인하 국면에서 단기 자산 랠리가 나타날 수 있으나, [전이 시차에 따른 실물경기 둔화 리스크]와 [환율 변동성]이 상존하므로, 실질 잉여현금흐름(FCF)이 입증되고 부채비율이 건전한 우량 자산에 한하여 선별적으로 유효성을 인정하는 전략으로 진화시킴.",
+    finalSynthesis: "말싸움의 승패나 일방적 정답이 아닌, 상대의 반론(Antithesis)을 흡수하여 내 생각의 사각지대를 메운 '정반합(Synthesis)'의 확신을 획득했습니다. 향후 시장 지표 발표나 노이즈 발생 시 본 진단서의 리스크 조건 충족 여부를 복기 기준으로 활용하십시오."
   };
 }
 
@@ -999,21 +1003,40 @@ ${analysisContext ? JSON.stringify(analysisContext) : "일반 경제 토론"}`;
 app.post("/api/evaluate-thesis", async (req, res) => {
   const { thesis, conversation, engineConfig } = req.body;
 
-  const prompt = `다음은 사용자가 제시한 경제 견해(Thesis)와 레드팀과의 토론 내역입니다.
-사용자의 논리적 견고성을 채점하고, 발견된 인지 편향과 향후 보강해야 할 포인트를 평가하세요.
+  const prompt = `당신은 EcoSight의 수석 소크라테스 평가 위원장 AI입니다.
+소크라테스식 레드팀 토론(Red Team Chat)의 목적은 단순한 '승패 판정'이나 '일방적 정답 제시'가 아닙니다.
+EcoSight의 핵심 철학인 "확증 편향 제거와 입체적 사고 훈련"에 맞추어 다음 3단계 최종 도달점을 분석하여 정반합 종합 진단 리포트를 작성하십시오:
+
+1. 생각의 균열과 맹점 발견 (Blind Spot Discovery):
+   - 사용자가 놓치고 있던 거시 지표, 반대편 리스크, 통화정책 시차 등의 사각지대를 포착 (Aha Moment)
+2. 정반합(Thesis-Antithesis-Synthesis)을 통한 논리 재건:
+   - 초기 주장을 무조건 철회하지 않고, 반론을 흡수하여 "리스크 A와 B가 존재하지만, 조건 C가 충족된다면 내 가설은 유효하다"와 같이 훨씬 더 단단하고 정교한 가설로 진화
+3. 최종 산출물: 논리 채점 및 종합 진단 리포트 (Knowledge Hub 저장용):
+   - 논리 강건성 점수 (0~100점): 반론 대응 능력 및 데이터 기반 논리성 평가
+   - 핵심 사각지대 요약
+   - 최종 종합 지혜 (Synthesis): 시장의 소음에 흔들리지 않는 확신(Conviction)의 가설 레포트
 
 [필수 언어 원칙]
-★ 모든 평가 내용과 종합 통찰 제언은 반드시 100% 한국어로 작성하십시오.
+★ 모든 평가 내용과 종합 통찰 제언은 반드시 100% 품격 있는 한국어로 작성하십시오.
 
-[사용자 Thesis]: ${thesis}
-[토론 내역]: ${JSON.stringify(conversation)}
+[사용자 원초 Thesis]: ${thesis}
+[레드팀 토론 전체 내역]: ${JSON.stringify(conversation)}
 
-다음 JSON으로 응답하세요:
+반드시 아래 JSON 포맷으로 정확히 응답하십시오:
 {
-  "thesisScore": 0부터 100 사이 숫자,
-  "blindSpots": ["발견된 사각지대 및 간과한 변수 1", "사각지대 2"],
-  "strengths": ["논리에서 돋보인 통찰 및 강점 1", "강점 2"],
-  "finalSynthesis": "정반합(Thesis-Antithesis-Synthesis) 관점에서 한 단계 업그레이드된 종합 통찰 제언"
+  "thesisScore": 0부터 100 사이 숫자 (논리 강건성 점수),
+  "scoreAnalysis": "점수 부여 사유: 사용자의 반론 대응 능력 및 거시 데이터 기반 논리성에 대한 객관적 평가 (2~3문장)",
+  "blindSpots": [
+    "토론 중 드러난 맹점 및 간과했던 리스크 항목 1",
+    "맹점 2",
+    "맹점 3"
+  ],
+  "strengths": [
+    "논리에서 돋보였던 강점 및 유효했던 데이터 기반 통찰 1",
+    "강점 2"
+  ],
+  "evolvedThesis": "정반합(Synthesis) 재건 가설: 반론을 흡수하여 '리스크 A·B를 감안하더라도, 조건 C 하에서는 내 가설이 유효하다' 형태로 고도화된 한 문장 진화 가설",
+  "finalSynthesis": "최종 종합 지혜 레포트: 향후 시장 지표 변화나 뉴스 소음 발생 시 복기할 수 있는 종합 진단 총평 (3~4문장)"
 }`;
 
   try {

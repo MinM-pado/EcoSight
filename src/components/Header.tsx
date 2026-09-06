@@ -131,13 +131,13 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             id="header-tier-plans-btn"
             onClick={onOpenTierModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-emerald-500/15 border border-amber-500/30 text-amber-300 hover:border-amber-400 text-xs font-semibold transition"
-            title="티어 1 (로컬 무료) / 티어 2·3 차후 유료 결제 전환 로드맵"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/15 via-purple-500/15 to-emerald-500/15 border border-amber-500/30 text-amber-300 hover:border-amber-400 text-xs font-semibold transition cursor-pointer"
+            title="EcoSight 3단계 사고력 티어 (Explorer ₩0 · Strategist ₩9,900 · Decision Maker ₩29,000)"
           >
             <CreditCard className="w-3.5 h-3.5 text-amber-400" />
-            <span>플랜 & 티어 2·3</span>
-            <span className="px-1 py-0.2 text-[9px] rounded bg-amber-500/20 text-amber-300 uppercase font-mono">
-              로드맵
+            <span>멤버십 플랜</span>
+            <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-300 uppercase font-mono font-bold">
+              3단계
             </span>
           </button>
 
